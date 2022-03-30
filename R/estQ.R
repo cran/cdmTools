@@ -1,4 +1,4 @@
-#' Empirical Q-matrix estimation
+#' @title Empirical Q-matrix estimation
 #'
 #' @description Empirical Q-matrix estimation based on the \emph{discrete factor loading} method (Wang, Song, & Ding, 2018) as used in Nájera, Abad, and Sorrel (2021).
 #' Apart from the conventional dichotomization criteria, the procedure based on loading differences described in Garcia-Garzon, Abad, and Garrido (2018) is also available.
@@ -35,6 +35,8 @@
 #' \item{\code{specifications}}{Function call specifications (\code{list}).}
 #' }
 #'
+#' @author {Pablo Nájera, Universidad Autónoma de Madrid}
+#'
 #' @references
 #' Garcia-Garzon, E., Abad, F. J., & Garrido, L. E. (2018). Improving bi-factor exploratory modelling: Empirical target rotation based on loading differences. \emph{Methodology}, \emph{15}, 45–55. https://doi.org/10.1027/1614-2241/a000163
 #'
@@ -63,8 +65,8 @@
 #' #------------------------------------
 #' # Using the bagging bootstrap method
 #' #------------------------------------
-#' # In boot.args argument, R = 100 is recommended (R = 30 is here used for illustration purposes)
-#' sugQ2 <- estQ(r = dat, K = 5, boot = TRUE, boot.args = list(R = 30, seed = 123)) # Estimate Q-matrix
+#' # In boot.args argument, R >= 100 is recommended (R = 20 is here used for illustration purposes)
+#' sugQ2 <- estQ(r = dat, K = 5, boot = TRUE, boot.args = list(R = 20, seed = 123)) # Estimate Q-matrix
 #' sugQ2$est.Q <- orderQ(sugQ2$est.Q, Q)$order.Q # Reorder Q-matrix attributes
 #' sugQ2$boot.Q # Proportion of replicas a q-entry was specified in the estimated Q-matrix
 #' mean(sugQ2$est.Q == Q) # Check similarity with the generating Q-matrix

@@ -1,4 +1,4 @@
-#' CDM fit comparison - dimensionality assessment method
+#' @title CDM fit comparison - dimensionality assessment method
 #'
 #' @description A procedure for determining the number of attributes underlying CDM using model fit comparison.
 #' For each number of attributes under exploration, a Q-matrix is estimated from the data using the \emph{discrete factor loading} method (Wang, Song, & Ding, 2018), which can be further validated using the \emph{Hull} method (Nájera, Sorrel, de la Torre, & Abad, 2020).
@@ -40,6 +40,8 @@
 #' \item{\code{usedQ}}{Q-matrices used to fit each model (\code{list}). They will be the estimated (and validated) Q-matrices if \code{Qs = NULL}. Otherwise, they will be \code{Qs}.}
 #' \item{\code{specifications}}{Function call specifications (\code{list}).}
 #' }
+#'
+#' @author {Pablo Nájera, Universidad Autónoma de Madrid \cr Miguel A. Sorrel, Universidad Autónoma de Madrid \cr Francisco J. Abad, Universidad Autónoma de Madrid}
 #'
 #' @references
 #' Ma, W., & de la Torre, J. (2020). GDINA: An R package for cognitive diagnosis modeling. \emph{Journal of Statistical Software}, \emph{93}(14). https://doi.org/10.18637/jss.v093.i14
@@ -88,7 +90,7 @@
 #' #-------------------------------------
 #' # Assess dimensionality from CDM data
 #' #-------------------------------------
-#' mcK <- modelcompK(dat = dat, exploreK = 2:3, stop = "none", val.Q = TRUE, verbose = TRUE)
+#' mcK <- modelcompK(dat = dat, exploreK = 2, stop = "none", val.Q = TRUE, verbose = TRUE)
 #' mcK$sug.K # Check suggested number of attributes by each fit index
 #' mcK$fit # Check fit indices for each K explored
 #' sug.Q <- mcK$usedQ[[paste0("K", mcK$sug.K["AIC"])]] # Suggested Q-matrix by AIC

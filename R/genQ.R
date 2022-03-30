@@ -1,4 +1,4 @@
-#' Generate Q-matrix
+#' @title Generate Q-matrix
 #'
 #' @description Generates a Q-matrix.
 #' The criteria from Chen, Liu, Xu, & Ying (2015) and Xu & Shang (2018) can be used to generate identifiable Q-matrices.
@@ -22,6 +22,8 @@
 #' \item{\code{is.Qid}}{Is the generated Q-matrix identifiable under the DINA/DINO models or others CDMs? (\code{vector}).}
 #' \item{\code{specifications}}{Function call specifications (\code{list}).}
 #' }
+#'
+#' @author {Pablo Nájera, Universidad Autónoma de Madrid}
 #'
 #' @references
 #' Chen, Y., Liu, J., Xu, G., & Ying, Z. (2015). Statistical analysis of Q-matrix based diagnostic classification models. \emph{Journal of the American Statistical Association}, \emph{110}, 850-866. https://doi.org/10.1080/01621459.2014.934827

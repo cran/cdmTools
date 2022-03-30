@@ -1,4 +1,4 @@
-#' Parallel analysis - dimensionality assessment method
+#' @title Parallel analysis - dimensionality assessment method
 #'
 #' @description Parallel analysis with column permutation (i.e., resampling) as used in Nájera, Abad, & Sorrel (2021).
 #' It is recommended to use principal components, Pearson correlations, and mean criterion (Garrido, Abad, & Ponsoda, 2013; Nájera, Abad, & Sorrel, 2021).
@@ -7,7 +7,7 @@
 #' The graph is made with the \code{ggplot2} package (Wickham et al., 2020).
 #'
 #' @param dat A \emph{N} individuals x \emph{J} items (\code{matrix} or \code{data.frame}). Missing values need to be coded as \code{NA}.
-#' @param R Number of simulated datasets (i.e., replications) to generate. The default is 100.
+#' @param R Number of resampled datasets (i.e., replications) to generate. The default is 100.
 #' @param fa Extraction method to use. It includes \code{"pc"} (for principal components analysis), \code{"fa"} (for principal axis factor analysis), and \code{"both"}. The default is \code{"pc"}.
 #' @param cor What type of correlations to use. It includes \code{"cor"} (for Pearson correlations), \code{"tet"} (for tetrachoric/polychoric correlations), and \code{"both"}. The default is \code{"both"}.
 #' @param cutoff What criterion to use as the cutoff. It can be \code{"mean"} (for the average generated eigenvalues) or a value between 0 and 100 (for a percentile). A vector with several criteria can be used. The default is \code{"mean"}.
@@ -23,6 +23,8 @@
 #' \item{\code{plot}}{The parallel analysis plot. Only if \code{plot = TRUE} (\code{plot}).}
 #' \item{\code{specifications}}{Function call specifications (\code{list}).}
 #' }
+#'
+#' @author {Pablo Nájera, Universidad Autónoma de Madrid \cr Miguel A. Sorrel, Universidad Autónoma de Madrid \cr Francisco J. Abad, Universidad Autónoma de Madrid}
 #'
 #' @references
 #' Garrido, L. E., Abad, F. J., & Ponsoda, V. (2013). A new look at Horn's parallel analysis with ordinal variables. \emph{Psychological Methods}, \emph{18}, 454-474. https://doi.org/10.1037/a0030005
@@ -62,7 +64,6 @@ paK <- function(dat, R = 100, fa = "pc", cor = "both", cutoff = "mean", fm = "ul
   if(!is.null(seed)){if((!is.numeric(seed) & !is.double(seed)) | length(seed) > 1){stop("Error in paK: seed must be a unique numeric value.")}}
   if(sum(is.na(cor(dat, use = "pair"))) > 0) stop("Error in paK: Parallel analysis cannot be computed when NAs are found in dat correlation matrix.")
 
-
   if(!is.null(seed)){set.seed(seed)}
   J <- ncol(dat)
   N <- nrow(dat)
@@ -70,18 +71,18 @@ paK <- function(dat, R = 100, fa = "pc", cor = "both", cutoff = "mean", fm = "ul
   if(fa == "both"){fa <- c("pc", "fa")}
   if(cor == "both"){cor <- c("cor", "tet")}
 
-  sim.pc.r <- sim.fa.r <- sim.pc.p <- sim.fa.p <- matrix(NA, R, J)
+  resample.pc.r <- resample.fa.r <- resample.pc.p <- resample.fa.p <- matrix(NA, R, J)
   for(i in 1:R){
     resample <- sapply(1:J, function(j) sample(dat[,j], length(dat[,j]), F))
     if("cor" %in% cor){
       tmp.r <- cdmTools.fa(resample, nfactors = 1, cor = "cor", fm = fm)
-      if("fa" %in% fa){sim.fa.r[i,] <- tmp.r$values}
-      if("pc" %in% fa){sim.pc.r[i,] <- tmp.r$e.values}
+      if("fa" %in% fa){resample.fa.r[i,] <- tmp.r$values}
+      if("pc" %in% fa){resample.pc.r[i,] <- tmp.r$e.values}
     }
     if("tet" %in% cor){
       tmp.p <- cdmTools.fa(resample, nfactors = 1, cor = "tet", fm = fm)
-      if("fa" %in% fa){sim.fa.p[i,] <- tmp.p$values}
-      if("pc" %in% fa){sim.pc.p[i,] <- tmp.p$e.values}
+      if("fa" %in% fa){resample.fa.p[i,] <- tmp.p$values}
+      if("pc" %in% fa){resample.pc.p[i,] <- tmp.p$e.values}
     }
     if(verbose){cat("\r", "In paK: Iteration", i, "out of", R)}
   }
@@ -94,18 +95,18 @@ paK <- function(dat, R = 100, fa = "pc", cor = "both", cutoff = "mean", fm = "ul
     if("fa" %in% fa){
       for(i in cutoff){
         if(i == "mean"){
-          reference["fa.cor.mean",] <- colMeans(sim.fa.r)
+          reference["fa.cor.mean",] <- colMeans(resample.fa.r)
         } else {
-          reference[paste(c("fa.cor", i), collapse = "."),] <- apply(sim.fa.r, 2, function(x) stats::quantile(x, as.numeric(i) / 100, na.rm = T))
+          reference[paste(c("fa.cor", i), collapse = "."),] <- apply(resample.fa.r, 2, function(x) stats::quantile(x, as.numeric(i) / 100, na.rm = T))
         }
       }
     }
     if("pc" %in% fa){
       for(i in cutoff){
         if(i == "mean"){
-          reference["pc.cor.mean",] <- colMeans(sim.pc.r)
+          reference["pc.cor.mean",] <- colMeans(resample.pc.r)
         } else {
-          reference[paste(c("pc.cor", i), collapse = "."),] <- apply(sim.pc.r, 2, function(x) stats::quantile(x, as.numeric(i) / 100, na.rm = T))
+          reference[paste(c("pc.cor", i), collapse = "."),] <- apply(resample.pc.r, 2, function(x) stats::quantile(x, as.numeric(i) / 100, na.rm = T))
         }
       }
     }
@@ -114,18 +115,18 @@ paK <- function(dat, R = 100, fa = "pc", cor = "both", cutoff = "mean", fm = "ul
     if("fa" %in% fa){
       for(i in cutoff){
         if(i == "mean"){
-          reference["fa.tet.mean",] <- colMeans(sim.fa.p)
+          reference["fa.tet.mean",] <- colMeans(resample.fa.p)
         } else {
-          reference[paste(c("fa.tet", i), collapse = "."),] <- apply(sim.fa.p, 2, function(x) stats::quantile(x, as.numeric(i) / 100, na.rm = T))
+          reference[paste(c("fa.tet", i), collapse = "."),] <- apply(resample.fa.p, 2, function(x) stats::quantile(x, as.numeric(i) / 100, na.rm = T))
         }
       }
     }
     if("pc" %in% fa){
       for(i in cutoff){
         if(i == "mean"){
-          reference["pc.tet.mean",] <- colMeans(sim.pc.p)
+          reference["pc.tet.mean",] <- colMeans(resample.pc.p)
         } else {
-          reference[paste(c("pc.tet", i), collapse = "."),] <- apply(sim.pc.p, 2, function(x) stats::quantile(x, as.numeric(i) / 100, na.rm = T))
+          reference[paste(c("pc.tet", i), collapse = "."),] <- apply(resample.pc.p, 2, function(x) stats::quantile(x, as.numeric(i) / 100, na.rm = T))
         }
       }
     }
@@ -189,7 +190,7 @@ paK <- function(dat, R = 100, fa = "pc", cor = "both", cutoff = "mean", fm = "ul
   names.sug.K <- names(nF)
   sug.K <- as.numeric(nF)
   names(sug.K) <- names.sug.K
-  row.names(reference) <- paste0("sim.", row.names(reference))
+  row.names(reference) <- paste0("resample.", row.names(reference))
   dat.eigen <- dat.eigen[order(row.names(dat.eigen)),]
   reference <- reference[order(row.names(reference)),]
   e.values <- rbind(dat.eigen, reference)
@@ -199,10 +200,10 @@ paK <- function(dat, R = 100, fa = "pc", cor = "both", cutoff = "mean", fm = "ul
     df.e.values <- data.frame(dataeigen = rep(row.names(e.values), each = J), J = rep(1:J, nrow(e.values)), eigen = as.numeric(t(e.values)))
     point <- ifelse(grepl("dat", df.e.values$dataeigen), 16, 4)
     P <- ggplot2::ggplot(df.e.values, ggplot2::aes(x = J, y = eigen, color = dataeigen)) +
-      ggplot2::geom_line(size = 1) +
-      ggplot2::geom_point(size = 2, shape = point) +
+      ggplot2::geom_line() +
+      ggplot2::geom_point(shape = point) +
       ggplot2::scale_y_continuous("Eigenvalues") +
-      ggplot2::scale_x_continuous("Number") +
+      ggplot2::scale_x_continuous("Component number") +
       ggplot2::theme_bw()
   }
 

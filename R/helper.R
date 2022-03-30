@@ -30,8 +30,7 @@ cdmTools.fa <- function (r, nfactors = 1, n.obs = NA, n.iter = 1, rotate = "obli
         mu <- rep(0, nvar)
         eX <- eigen(r)
         X <- matrix(stats::rnorm(nvar * n.obs), n.obs)
-        X <- t(eX$vectors %*% diag(sqrt(pmax(eX$values,
-                                             0)), nvar) %*% t(X))
+        X <- t(eX$vectors %*% diag(sqrt(pmax(eX$values, 0)), nvar) %*% t(X))
       }
       else {
         X <- r[sample(n.obs, n.obs, replace = TRUE),

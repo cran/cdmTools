@@ -73,8 +73,8 @@ mean(sugQ1$est.Q == Q) # Check similarity with the generating Q-matrix
 #------------------------------------
 # Using the bagging bootstrap method
 #------------------------------------
-# In boot.args argument, R = 100 is recommended (R = 30 is here used for illustration purposes)
-sugQ2 <- estQ(r = dat, K = 5, boot = TRUE, boot.args = list(R = 30, seed = 123)) # Estimate Q-matrix
+# In boot.args argument, R >= 100 is recommended (R = 20 is here used for illustration purposes)
+sugQ2 <- estQ(r = dat, K = 5, boot = TRUE, boot.args = list(R = 20, seed = 123)) # Estimate Q-matrix
 sugQ2$est.Q <- orderQ(sugQ2$est.Q, Q)$order.Q # Reorder Q-matrix attributes
 sugQ2$boot.Q # Proportion of replicas a q-entry was specified in the estimated Q-matrix
 mean(sugQ2$est.Q == Q) # Check similarity with the generating Q-matrix
@@ -89,4 +89,7 @@ Revelle, W. (2019). \emph{psych: Procedures for Psychological, Psychometric, and
 Wang, W., Song, L., & Ding, S. (2018). An exploratory discrete factor loading method for Q-matrix specification in cognitive diagnosis models. In: M. Wilberg, S. Culpepper, R. Janssen, J. Gonzalez, & D. Molenaar (Eds.), \emph{Quantitative Psychology. IMPS 2017. Springer Proceedings in Mathematics & Statistics} (Vol. 233, pp. 351–362). Springer.
 
 Xu, G., & Shang, Z. (2018). Identifying latent structures in restricted latent class models. \emph{Journal of the American Statistical Association}, \emph{113}, 1284–1295. https://doi.org/10.1080/01621459.2017.1340889
+}
+\author{
+{Pablo Nájera, Universidad Autónoma de Madrid}
 }

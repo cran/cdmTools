@@ -1,4 +1,4 @@
-#' Empirical Q-matrix validation
+#' @title Empirical Q-matrix validation
 #'
 #' @description Empirical Q-matrix validation using the \emph{Hull} method (Nájera, Sorrel, de la Torre, & Abad, 2020a).
 #' The procedure can be used either with the PVAF (de la Torre & Chiu, 2016) or McFadden's pseudo R-squared (McFadden, 1974).
@@ -29,6 +29,8 @@
 #' \item{\code{time.used}}{Total computation time (\code{difftime}).}
 #' \item{\code{specifications}}{Function call specifications (\code{list}).}
 #' }
+#'
+#' @author {Pablo Nájera, Universidad Autónoma de Madrid \cr Miguel A. Sorrel, Universidad Autónoma de Madrid \cr Francisco J. Abad, Universidad Autónoma de Madrid}
 #'
 #' @references
 #' de la Torre, J., & Chiu, C.-Y. (2016). A general method of empirical Q-matrix validation. \emph{Psychometrika}, \emph{81}, 253-273. https://doi.org/10.1007/s11336-015-9467-8

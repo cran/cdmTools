@@ -19,7 +19,7 @@ paK(
 \arguments{
 \item{dat}{A \emph{N} individuals x \emph{J} items (\code{matrix} or \code{data.frame}). Missing values need to be coded as \code{NA}.}
 
-\item{R}{Number of simulated datasets (i.e., replications) to generate. The default is 100.}
+\item{R}{Number of resampled datasets (i.e., replications) to generate. The default is 100.}
 
 \item{fa}{Extraction method to use. It includes \code{"pc"} (for principal components analysis), \code{"fa"} (for principal axis factor analysis), and \code{"both"}. The default is \code{"pc"}.}
 
@@ -71,4 +71,7 @@ Revelle, W. (2019). \emph{psych: Procedures for Psychological, Psychometric, and
 Robitzsch, A. (2020). \emph{sirt: Supplementary Item Response Theory Models}. R package version 3.9-4. https://CRAN.R-project.org/package=sirt.
 
 Wickham, H., et al. (2020). \emph{ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics}. R package version 3.3.2. https://CRAN.R-project.org/package=ggplot2.
+}
+\author{
+{Pablo Nájera, Universidad Autónoma de Madrid \cr Miguel A. Sorrel, Universidad Autónoma de Madrid \cr Francisco J. Abad, Universidad Autónoma de Madrid}
 }
