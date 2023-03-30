@@ -1,10 +1,10 @@
-cdmTools.fa <- function (r, nfactors = 1, n.obs = NA, n.iter = 1, rotate = "oblimin",
-                         scores = "regression", residuals = FALSE, SMC = TRUE,
-                         covar = FALSE, missing = FALSE, impute = "median",
-                         min.err = 0.001, max.iter = 50, symmetric = TRUE, warnings = TRUE,
-                         fm = "minres", alpha = 0.1, p = 0.05, oblique.scores = FALSE,
-                         np.obs = NULL, use = "pairwise", cor = "cor",
-                         correct = 0.5, weight = NULL, ...){
+cdmTools.fa <- function(r, nfactors = 1, n.obs = NA, n.iter = 1, rotate = "oblimin",
+                        scores = "regression", residuals = FALSE, SMC = TRUE,
+                        covar = FALSE, missing = FALSE, impute = "median",
+                        min.err = 0.001, max.iter = 50, symmetric = TRUE, warnings = TRUE,
+                        fm = "minres", alpha = 0.1, p = 0.05, oblique.scores = FALSE,
+                        np.obs = NULL, use = "pairwise", cor = "cor",
+                        correct = 0.5, weight = NULL, ...){
   cl <- match.call()
   if (psych::isCorrelation(r)) {
     if (is.na(n.obs) && (n.iter > 1))
@@ -34,7 +34,7 @@ cdmTools.fa <- function (r, nfactors = 1, n.obs = NA, n.iter = 1, rotate = "obli
       }
       else {
         X <- r[sample(n.obs, n.obs, replace = TRUE),
-               ]
+        ]
       }
       fs <- cdmTools.fac(X, nfactors = nfactors, rotate = rotate,
                          scores = "none", SMC = SMC, missing = missing,
@@ -109,13 +109,13 @@ cdmTools.fa <- function (r, nfactors = 1, n.obs = NA, n.iter = 1, rotate = "obli
   }
   return(results)
 }
-cdmTools.fac <- function (r, nfactors = 1, n.obs = NA, rotate = "oblimin",
-                          scores = "tenBerge", residuals = FALSE, SMC = TRUE,
-                          covar = FALSE, missing = FALSE, impute = "median",
-                          min.err = 0.001, max.iter = 50, symmetric = TRUE, warnings = TRUE,
-                          fm = "minres", alpha = 0.1, oblique.scores = FALSE,
-                          np.obs = NULL, use = "pairwise", cor = "cor",
-                          correct = 0.5, weight = NULL, ...){
+cdmTools.fac <- function(r, nfactors = 1, n.obs = NA, rotate = "oblimin",
+                         scores = "tenBerge", residuals = FALSE, SMC = TRUE,
+                         covar = FALSE, missing = FALSE, impute = "median",
+                         min.err = 0.001, max.iter = 50, symmetric = TRUE, warnings = TRUE,
+                         fm = "minres", alpha = 0.1, oblique.scores = FALSE,
+                         np.obs = NULL, use = "pairwise", cor = "cor",
+                         correct = 0.5, weight = NULL, ...){
   cl <- match.call()
   control <- NULL
   "fit.residuals" <- function(Psi, S, nf, S.inv = NULL,
@@ -1004,6 +1004,7 @@ bootSE.parallel <- function(fit, bootsample = 50, type = "nonparametric", n.core
   tmp <- as.list(fit$extra$call)[-c(1:3)]
   GDINA.options[names(GDINA.options) %in% names(tmp)] <- tmp
   GDINA.options$verbose <- 0
+  GDINA.options$model <- fit$model
   att <- GDINA::extract(fit, "attributepattern")
 
   cl <- parallel::makeCluster(n.cores, type = "SOCK")
@@ -1055,4 +1056,101 @@ bootSE.parallel <- function(fit, bootsample = 50, type = "nonparametric", n.core
 
   res <- list(itemparm.se = se.ip, delta.se = se.d, lambda.se = se.jointAtt, boot.est = list(lambda = boot.parallel$lambda, itemprob = boot.parallel$itemprob, delta = boot.parallel$delta))
   return(res)
+}
+phi.ML <- function(phi, dist, J, posterior = FALSE, att.prior = NULL){
+  if(is.null(att.prior)){att.prior <- rep(1 / nrow(dist), nrow(dist))}
+  L.il <- t(phi^dist * (1 - phi)^(J - dist))
+  mL.il <- t(t(L.il) * att.prior)
+  if(posterior){
+    pp.il <- t(apply(mL.il, 1, function(i) i / sum(i)))
+    lp <- colMeans(pp.il)
+    return(sum(log(apply(L.il %*% lp, 1, prod))))
+  } else {
+    return(sum(log(apply(mL.il, 1, sum))))
+  }
+}
+cdmTools.AlphaNP <- function(Y, Q, gate = c("AND", "OR"), method = c("Hamming", "Weighted", "Penalized"), wg = 1, ws = 1){
+  Y <- as.matrix(Y)
+  Q <- as.matrix(Q)
+  gate <- match.arg(gate)
+  method <- match.arg(method)
+  nperson <- dim(Y)[1]
+  nitem <- dim(Q)[1]
+  natt <- dim(Q)[2]
+  M <- 2^natt
+  pattern <- cdmTools.AlphaPermute(natt)
+  Ideal <- matrix(NA, M, nitem)
+  for(m in 1:M){
+    for(j in 1:nitem){
+      if(gate == "AND"){
+        u <- prod(pattern[m, ]^Q[j, ])
+      } else if(gate == "OR"){
+        u <- 1 - prod((1 - pattern[m, ])^Q[j, ])
+      } else {
+        return(warning("Gate specification not valid."))
+      }
+      Ideal[m, j] <- u
+    }
+  }
+  if(method == "Hamming"){
+    weight <- rep(1, nitem)
+    ws <- wg <- 1
+  } else if(method == "Weighted"){
+    p.bar <- apply(Y, 2, function(x) mean(x, na.rm = TRUE))
+    weight <- 1/(p.bar * (1 - p.bar))
+    weight[weight > 1/(0.95 * 0.05)] <- 1/(0.95 * 0.05)
+    ws <- wg <- 1
+  } else if (method == "Penalized"){
+    p.bar <- apply(Y, 2, function(x) mean(x, na.rm = TRUE))
+    weight <- 1/(p.bar * (1 - p.bar))
+    weight[weight > 1/(0.95 * 0.05)] <- 1/(0.95 * 0.05)
+    if(ws == wg){warning("Penalzing weights for guess and slip are the same --> equivalent with the \"Weighted\" method.")}
+  } else {
+    return(warning("Method specification not valid."))
+  }
+  loss.matrix <- matrix(NA, nrow = M, ncol = nperson)
+  est.class <- NULL
+  est.pattern <- NULL
+  n.tie <- rep(0, nperson)
+  for(i in 1:nperson){
+    valid <- !is.na(Y[i, ])
+    Y.matrix <- matrix(rep(Y[i, ], M), M, nitem, byrow = TRUE)
+    loss <- apply(matrix(rep(weight[valid], M), M, sum(valid), byrow = TRUE) * (wg * abs(Y.matrix[,valid] - Ideal[,valid]) * Y.matrix[,valid] + ws * abs(Y.matrix[,valid] - Ideal[,valid]) * (1 - Y.matrix[,valid])), 1, sum)
+    loss.matrix[, i] <- loss
+    min.loss <- which(loss == min(loss))
+    if(length(min.loss) != 1){
+      n.tie[i] <- length(min.loss)
+      min.loss <- sample(min.loss, 1, prob = rep(1/length(min.loss), length(min.loss)))
+    }
+    est.class <- c(est.class, min.loss)
+  }
+  est.pattern <- pattern[est.class, ]
+  est.ideal <- Ideal[est.class, ]
+  output <- list(alpha.est = est.pattern, est.ideal = est.ideal,
+                 est.class = est.class, n.tie = n.tie, pattern = pattern,
+                 loss.matrix = loss.matrix, method = method, Q = Q, Y = Y)
+  class(output) <- "AlphaNP"
+  return(output)
+}
+cdmTools.aggregateCol <- function(mX, ind){
+  uniq <- unique(ind)
+  N <- nrow(mX)
+  Lj <- length(uniq)
+  res <- matrix(0, nrow = N, ncol = Lj)
+  for(l in 1:Lj){
+    loc <- which(ind == l)
+    res[,l] <- rowSums(mX[, loc, drop = FALSE])
+  }
+  return(res)
+}
+cdmTools.matchMatrix <- function(A, B){
+  return(t(t(match(apply(B, 1, paste, collapse = ""), apply(A, 1, paste, collapse = "")))))
+}
+cdmTools.AlphaPermute <- function(dim){
+  alpha <- matrix(c(0, 1), 2, 1)
+  for (i in 1:(dim - 1)) {
+    alpha <- rbind(alpha, alpha)
+    alpha <- cbind(alpha, c(rep(0, 2^i), rep(1, 2^i)))
+  }
+  return(alpha)
 }
