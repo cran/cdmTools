@@ -1,8 +1,8 @@
 #' @title Calculate standardized log-likelihood statistic (lZ) for person fit evaluation
 #'
-#' @description This function calculates the standardized log-likelihood statistic (lZ; Cui & Li, 2015); Drasgow et al. 1985) and the proposals for correcting its distribution discussed in Santos et al., 2019).
+#' @description This function calculates the standardized log-likelihood statistic (lZ; Cui & Li, 2015; Drasgow et al. 1985) and the proposals for correcting its distribution discussed in Santos et al. (2019).
 #'
-#' @param fit A G-DINA model fit object from the \code{GDINA} package (Ma & de la Torre, 2020).
+#' @param fit An object of class \code{RDINA} or \code{GDINA} (Ma & de la Torre, 2020).
 #' @param att.est What attribute estimates are used? The default is \code{"MLE"}.
 #' @param sig.level Scalar numeric. Alpha level for decision. Default is 0.05.
 #' @param p.adjust.method Scalar character. Correction method for p-values. Possible values include "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", and "none". See p.adjust function from the stats R package for additional details. Default is BH.
@@ -15,7 +15,7 @@
 #' \item{\code{sigadjp}}{Scalar vectors denoting the examinees for which the person fit statitic is significant (adjusted p-value) (\code{list}).}
 #' }
 #'
-#' @author {Pablo Nájera, Universidad Autónoma de Madrid, \email{pablo.najera@uam.es}, \cr Miguel A. Sorrel, Universidad Autónoma de Madrid, \cr Kevin K. Santos, University of the Philippines}
+#' @author {Miguel A. Sorrel, Universidad Autónoma de Madrid, \cr Kevin Santos, University of the Philippines, \cr Pablo Nájera, Universidad Pontificia Comillas}
 #'
 #' @references
 #'
@@ -36,8 +36,9 @@
 #' res.personFit <- personFit(fit)
 #' res.personFit
 #' }
-
 personFit <- function(fit, att.est = "MLE", sig.level = 0.05, p.adjust.method = "BH"){
+  if(inherits(fit, "RDINA")){fit <- RDINA2GDINA(fit)}
+  if(!inherits(fit, "GDINA")){stop("Error in personFit: fit must be of class 'RDINA' or 'GDINA'.")}
   dat <- fit$options$dat
   Q <- fit$options$Q
   N <- nrow(dat)
