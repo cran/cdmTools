@@ -1154,3 +1154,79 @@ cdmTools.AlphaPermute <- function(dim){
   }
   return(alpha)
 }
+cdmTools.partial_order2 <- function(Kjj, AlphaPattern = NULL){
+  if(is.null(AlphaPattern)){
+    alp <- GDINA::attributepattern(Kjj)
+  } else {
+    alp <- AlphaPattern
+  }
+  alp <- cbind(c(1:nrow(alp)), rowSums(alp), alp)
+  out <- NULL
+  for(k in 1:max(alp[, 2])){
+    for(i in 1:sum(alp[, 2] == k - 1)){
+      alpk_1 <- alp[alp[, 2] == k - 1, , drop = FALSE]
+      alpk <- alp[alp[, 2] == k, , drop = FALSE]
+      out <- rbind(out, cbind(alpk[(apply(alpk, 1, function(x){all(x - alpk_1[i, ] >= 0)})), 1], alpk_1[i, 1]))
+    }
+  }
+  colnames(out) <- c("l", "s")
+  return(out)
+}
+cdmTools.m2l <- function(m, remove = NA){
+  if(is.na(remove)){
+    lapply(seq_len(nrow(m)), function(i) m[i, !is.na(m[i,
+    ])])
+  } else {
+    lapply(seq_len(nrow(m)), function(i) m[i, m[i, ] != remove])
+  }
+}
+cdmTools.model.table <- function(){
+    data.frame(model.char=c("LOGGDINA","LOGITGDINA","UDF", "GDINA", "DINA", "DINO", "ACDM", "LLM", "RRUM", "MSDINA","BUGDINO","SISM"),
+               model.num=c(-3:8),
+               linkf.num = c(3,2,-1,1,1,1,1,2,3,1,1,1),
+               linkf.char = c("log","logit","UDF","identity","identity","identity","identity","logit","log","identity","identity","identity"),
+               rule = c(0,0,-1,0,1,2,3,3,3,4,5,6))
+}
+cdmTools.model2numeric <- function(model, J = 1){
+  x <- cdmTools.model.table()
+  if(is.numeric(model)){
+    if (J != 1 && length(model) != J)
+      model <- rep(model, J)
+  } else {
+    M <- x$model.char
+    if (J != 1 && length(model) != J)
+      model <- rep(model, J)
+    model <- match(toupper(model), M) - 4
+  }
+  model
+}
+cdmTools.model2rule.j <- function(model.j){
+  x <- cdmTools.model.table()
+  if (is.character(model.j)) {
+    x$rule[which(x$model.char == model.j)]
+  }
+  else if (is.numeric(model.j)) {
+    x$rule[which(x$model.num == model.j)]
+  }
+}
+est.polarity <- function(polarity, Q, polarity.initial = 1e-4, polarity.prior = NULL){
+  J <- nrow(polarity)
+  init.parm <- lapply(1:J, function(x) rep(NA, 4))
+  item.prior <- plyr::llply(2^rowSums(Q), function(x) matrix(NA, nrow = x, ncol = 2))
+  names(init.parm) <- names(item.prior) <- sapply(1:J, function(x) paste0("Item ", x))
+  if(is.null(polarity.prior)){polarity.prior <- list(c(1, 1), c(1, 1), c(1, 1))}
+  for(j in 1:J){
+    alpha.j <- expand.grid(lapply(1:sum(Q[j,]), function(x) c(0,1)))
+    tmp <- (polarity[j,1]*(2*alpha.j[,1]-1) + polarity[j,2]*(-2*alpha.j[,2]+1) + 2)/4
+    init.parm[[j]][tmp == 0] <- polarity.initial
+    init.parm[[j]][tmp == 0.5] <- 0.5
+    init.parm[[j]][tmp == 1] <- 1 - polarity.initial
+    names(init.parm[[j]]) <- paste0("P(", apply(alpha.j, 1, paste, collapse = ""), ")")
+    item.prior[[j]][tmp == 0,] <- polarity.prior[[1]]
+    item.prior[[j]][tmp == 0.5,] <- polarity.prior[[2]]
+    item.prior[[j]][tmp == 1,] <- polarity.prior[[3]]
+    rownames(item.prior[[j]]) <- apply(alpha.j, 1, paste, collapse = "")
+    colnames(item.prior[[j]]) <- c("alfa", "beta")
+  }
+  return(list(init.parm = init.parm, item.prior = item.prior))
+}
